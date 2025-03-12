@@ -1,6 +1,51 @@
 # threat-detection-rules
 Collection of YARA and Suricata rules for detecting various malware threats
 
+# Qilin
+
+- [Analysis blog post](https://shadowshell.io/qilin-ransomware)
+
+- [Rules](qilin)
+
+## Usage
+
+### YARA
+
+```
+$ yara -s qilin.yar qilin-esxi.elf
+qilin qilin-esxi.elf
+0xe92b6:$1: Disables process kill
+0xe92e6:$2: Disables rename of completed files
+0xe9323:$3: Disables snapshot deletion
+0xe9358:$4: Disables VM kill
+0xebc00:$5: for I in $(esxcli storage filesystem list |grep 'VMFS-5' |awk '{print $1}'); do vmkfstools -c 10M -d eagerzeroedthick $I/eztDisk > /dev/null; vmkfstools -U $I/eztDisk > /dev/null; done
+0xebcc0:$6: for I in $(esxcli storage filesystem list |grep 'VMFS-5' |awk '{print $1}'); do vmkfstools -c 10M -d eagerzeroedthick $I/eztDisk; vmkfstools -U $I/eztDisk; done
+0xebd68:$7: for I in $(esxcli storage filesystem list |grep 'VMFS-6' |awk '{print $1}'); do vmkfstools -c 10M -d eagerzeroedthick $I/eztDisk > /dev/null; vmkfstools -U $I/eztDisk > /dev/null; done
+0xebe28:$8: for I in $(esxcli storage filesystem list |grep 'VMFS-6' |awk '{print $1}'); do vmkfstools -c 10M -d eagerzeroedthick $I/eztDisk; vmkfstools -U $I/eztDisk; done
+0xebed0:$9: esxcfg-advcfg -s 32768 /BufferCache/MaxCapacity
+0xebf00:$10: esxcfg-advcfg -s 20000 /BufferCache/FlushInterval
+0xec032:$11: esxcli vm process list
+0xebbd8:$12: esxcli vm process kill -t force -w %llu
+0xec05b:$13: vim-cmd vmsvc/getallvms
+0xebfc0:$14: vim-cmd vmsvc/snapshot.removeall %llu > /dev/null 2>&1
+0xe9ce9:$15: dhl:p:Rrt:wy
+0xe9cda:$16: %s_RECOVER.txt
+0xe9ea9:$17: /etc/motd.template
+0xe9ebc:$18: /var/run/motd
+0xe954c:$19: /etc/motd
+0xe9ea9:$19: /etc/motd
+0xe9eca:$19: /etc/motd
+0xeb3a8:$20: -----BEGIN PUBLIC KEY-----
+0xeb3a8:$21: -----BEGIN PUBLIC KEY-----\x0AMIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEA3a4G68kgJX2bwWZX23Yz\x0AzPI68Fl6eocJ+XLcPN9dvG3o/SV04F2zE7nWUhBbwsBHiX8bIquqVyVV+Y93FOCn\x0AeJODySiy+bLZ1QfXKMjoNbhHq+aeuYCV8na3LF3hoGpST6uJpXUxbhZOBqHHbbx6\x0AvVy1fXOUEvaEOhqkglfDUQ7/fH6sT1p/3RyCtGi3o7588oMHOVgz3jZux2dqp9Zy\x0APs9MqZs0OtcBAXTG4EmD8yz2RgH+D9j756snWNZeknnjNO+KUARDSICKFOYtb3wz\x0AxYFVvACB3sJuTpAJ2HuaWIEo8NljGsMkNTqy3tFY0WnUBxAgt7AMUM+Ex75DGa9H\x0AIAXd+bTOfo+zyUGKiUFBqBZjo8T0ueTpr8BZb98fl5/LFpXmBuR/dJBfeuq3a4vK\x0AFpxx796zUe/hoiBSvw9GzLyYa5A5Lb
+0xebb0b:$22: Detected OS: ESXi (%d)
+0xe9c10:$23: Are you sure to start encryption? (y/n)
+0xe9c88:$24: File tree traversing done. Waiting workers to complete...
+0xe9703:$25: Qilin
+0xe970d:$26: Your network/system was encrypted.
+0xe9b86:$27: o7L03e8F9J
+0xeb099:$27: o7L03e8F9J
+```
+
 # Hancitor
 
 - [Analysis blog post](https://shadowshell.io/hancitor-loader)
