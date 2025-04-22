@@ -100,3 +100,71 @@ $ sudo tail -f /var/log/suricata/fast.log
 02/24/2025-15:31:54.275576  [**] [1:1000001:2] Hancitor beacon [**] [Classification: (null)] [Priority: 3] {TCP} 192.168.56.129:49930 -> 192.168.56.128:80
 02/24/2025-15:31:54.299836  [**] [1:1000001:2] Hancitor beacon [**] [Classification: (null)] [Priority: 3] {TCP} 192.168.56.129:49931 -> 192.168.56.128:80
 ```
+
+# Mirai SORA ARM
+
+- [Analysis blog post](https://shadowshell.io/mirai-sora-botnet)
+- [Rules](mirai-sora-arm)
+
+## Usage
+
+### YARA
+
+```
+$ yara -s mirai-packed.yar mirai-packed.elf
+mirai_sora_packed_arm mirai-packed.elf
+0x98:$1: UPX!
+0x6deb:$1: UPX!
+0x6df4:$1: UPX!
+0x6670:$2: $Info: This file is packed with the UPX executable packer http://upx.sf.net $
+0x66bf:$3: $Id: UPX 3.94 Copyright (C) 1996-2017 the UPX Team. All Rights Reserved. $
+0x1b1:$4: y$Qdl%
+0x2e2:$5: aym&,ZYeC
+0x35a:$6: :b[;tgo
+0x440:$7: 1`Rg{z
+0x484:$8: R5&9Sc
+0x6f6:$9: \ME'Tj
+0x749:$10: RSB$<|R
+0x855:$11: a> ~!wqgUY
+0x88e:$12: fZ{Glb
+0xa8c:$13: ld@j^]~
+0xca0:$14: 902n\x09SP
+0xde2:$15: gP';H;
+0x1151:$16: ~-%&xI
+0x13ab:$17: 0N?>BH
+0x14d7:$18: 8?oVM\3
+```
+
+```
+$ yara -s mirai-unpacked.yar mirai-unpacked.elf
+mirai_sora_unpacked_arm mirai-unpacked.elf
+0xfb94:$1: 154.7.253.207
+0x10b80:$2: AF FB DE DE
+0xfd28:$3: 07 1B 06 15 6E 74 35 24 24 38 31 20 74 3A 3B 20 74 32 3B 21 3A 30 54 00
+0xfd14:$4: 7B 36 3D 3A 7B 36 21 27 2D 36 3B 2C 74 07 1B 06 15 54 00 00
+0x107f0:$5: 17 3B 3A 3A 31 37 20 31 30 74 00 3B 74 17 1A 17 54 00 00 00
+0xfe08:$6: 7B 30 31 22 7B 23 35 20 37 3C 30 3B 33 54 00
+0xfe18:$7: 7B 30 31 22 7B 39 3D 27 37 7B 23 35 20 37 3C 30 3B 33 54 00
+0xfcf0:$8: 51 74 00 00
+0xfe38:$9: 3B 33 3D 3A 54 00
+0xfe40:$10: 31 3A 20 31 26 54 00
+0xfd00:$11: 31 3A 35 36 38 31 54 00
+0xfd08:$12: 27 2D 27 20 31 39 54 00
+0xfd10:$13: 27 3C 54 00
+0xfcf8:$14: 27 3C 31 38 38 54 00
+0xfd40:$15: 3A 37 3B 26 26 31 37 20 54 00
+0xfd78:$16: 7B 24 26 3B 37 7B 54 00
+0xfd80:$17: 7B 31 2C 31 54 00
+0xfdbc:$18: 7A 35 3A 3D 39 31 54 00
+0x7f98:$19: 00 20 A0 E3 06 30 D2 E7 54 30 23 E2 06 30 C2 E7 01 20 82 E2 02 00 57 E1 F9 FF FF 1A
+0xb1b0:$20: 00 C0 A0 E3 00 20 9E E5 02 30 DC E7 03 30 20 E0 02 30 CC E7 00 10 9E E5 01 30 DC E7 03 30 26 E0 01 30 CC E7 00 20 9E E5 02 30 DC E7 03 30 25 E0 02 30 CC E7 00 10 9E E5 01 30 DC E7 03 30 24 E0 ...
+0xb268:$20: 00 C0 A0 E3 00 20 9E E5 02 30 DC E7 03 30 20 E0 02 30 CC E7 00 10 9E E5 01 30 DC E7 03 30 26 E0 01 30 CC E7 00 20 9E E5 02 30 DC E7 03 30 25 E0 02 30 CC E7 00 10 9E E5 01 30 DC E7 03 30 24 E0 ...
+```
+
+### Suricata
+
+```
+$ sudo suricata -c /etc/suricata/suricata.yaml -s mirai.rules -i 
+$ sudo tail -f /var/log/suricata/fast.log
+04/04/2025-16:15:20.435158  [**] [1:1000003:1] Mirai SORA C2 [**] [Classification: (null)] [Priority: 3] {TCP} 192.168.56.128:49250 -> 154.7.253.207:1312
+```
