@@ -165,7 +165,7 @@ author: Andras Gemes
 date: 2025/04/04
 references:
   - https://shadowshell.io/mirai-sora-botnet
-    - https://github.com/gemesa/threat-detection-rules/tree/main/mirai-sora-arm
+  - https://github.com/gemesa/threat-detection-rules/tree/main/mirai-sora-arm
 # https://github.com/SigmaHQ/sigma-specification/blob/main/specification/sigma-appendix-taxonomy.md
 # https://github.com/SigmaHQ/sigma-specification/blob/main/specification/sigma-appendix-modifiers.md
 logsource:
@@ -183,45 +183,3 @@ tags:
   - attack.discovery
   # File and Directory Discovery - https://attack.mitre.org/techniques/T1083/
   - attack.t1083
-
----
-title: Mirai SORA - generic telnet/ssh brute force keywords
-id: 9e174c92-bef3-48cb-81c9-4f4ed99e9deb
-status: experimental
-description: |
-  Detects command execution containing Mirai-style brute force keywords.
-  Based on YARA rules detecting encrypted strings: "ogin", "enter", "enable", "system", "shell"
-  These are commonly used in Mirai's scanner module for credential stuffing.
-author: Andras Gemes
-date: 2025/04/04
-references:
-  - https://shadowshell.io/mirai-sora-botnet
-  - https://github.com/gemesa/threat-detection-rules/tree/main/mirai-sora-arm
-# https://github.com/SigmaHQ/sigma-specification/blob/main/specification/sigma-appendix-taxonomy.md
-# https://github.com/SigmaHQ/sigma-specification/blob/main/specification/sigma-appendix-modifiers.md
-logsource:
-  product: linux
-  category: process_creation
-detection:
-  selection_suspicious_combo:
-    CommandLine|contains:
-      - "shell"
-      - "enable"
-      - "system"
-  filter_legitimate:
-    Image|endswith:
-      - "/bash"
-      - "/sh"
-      - "/dash"
-    ParentImage|endswith:
-      - "/sshd"
-      - "/login"
-  condition: selection_suspicious_combo and not filter_legitimate
-falsepositives:
-  - Legitimate system administration
-level: low
-tags:
-  # tactic - https://attack.mitre.org/tactics/enterprise/
-  - attack.initial-access
-  # Brute Force - https://attack.mitre.org/techniques/T1110/
-  - attack.t1110
