@@ -168,3 +168,35 @@ $ sudo suricata -c /etc/suricata/suricata.yaml -s mirai.rules -i
 $ sudo tail -f /var/log/suricata/fast.log
 04/04/2025-16:15:20.435158  [**] [1:1000003:1] Mirai SORA C2 [**] [Classification: (null)] [Priority: 3] {TCP} 192.168.56.128:49250 -> 154.7.253.207:1312
 ```
+
+# Fake Chrome updater
+
+- [Analysis blog post](https://shadowshell.io/fake-chrome-updater)
+
+- [Rules](fake-chrome-updater)
+
+## Usage
+
+### YARA
+
+```
+$ mkdir chrome-updater-unzipped
+$ cp ChromeUpdater.apk chrome-updater-unzipped/
+$ cd chrome-updater-unzipped
+$ unzip ChromeUpdater.apk
+$ rm ChromeUpdater.apk
+$ cd ..
+$ yara -s fake_chrome_updater_xml_android.yar fake_chrome_updater_dex_android.yar -r chrome-updater-unzipped
+fake_chrome_updater_xml_android chrome-updater-unzipped/res/layout/main.xml
+0xff:$0: Google Chrome Updater
+0x131:$1: Your Chrome version is outdated! Chrome version: 65.1 (19 years ago!)
+0xe1:$2: Download and install update
+fake_chrome_updater_dex_android chrome-updater-unzipped/classes54.dex
+0x71cad:$0: ATwvXhg0JDYNWzQ6YVkYJyEoDVc7dD9CTSd0IkhOPDcjAw==
+0x7e2aa:$1: Gh8=
+0x83e09:$2: OTshTlkhdGtO
+0x83dff:$3: OTshTlkh
+0x83e09:$3: OTshTlkh
+0x7e248:$4: GTshSl0ndCFCTHU/L0FUMDBoDWowJzJMSiE9KEoW
+0x7e294:$5: GTshSl0ndDVZVyUkI0kW
+```
