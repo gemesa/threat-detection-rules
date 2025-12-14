@@ -180,18 +180,13 @@ $ sudo tail -f /var/log/suricata/fast.log
 ### YARA
 
 ```
-$ mkdir chrome-updater-unzipped
-$ cp ChromeUpdater.apk chrome-updater-unzipped/
-$ cd chrome-updater-unzipped
-$ unzip ChromeUpdater.apk
-$ rm ChromeUpdater.apk
-$ cd ..
-$ yara -s fake_chrome_updater_xml_android.yar fake_chrome_updater_dex_android.yar -r chrome-updater-unzipped
-fake_chrome_updater_xml_android chrome-updater-unzipped/res/layout/main.xml
+$ apktool d ChromeUpdater.apk -o chrome-updater-decoded
+$ yara -s fake_chrome_updater_xml_android.yar fake_chrome_updater_dex_android.yar -r chrome-updater-decoded
+fake_chrome_updater_xml_android chrome-updater-decoded/res/layout/main.xml
 0xff:$0: Google Chrome Updater
 0x131:$1: Your Chrome version is outdated! Chrome version: 65.1 (19 years ago!)
 0xe1:$2: Download and install update
-fake_chrome_updater_dex_android chrome-updater-unzipped/classes54.dex
+fake_chrome_updater_dex_android chrome-updater-decoded/classes54.dex
 0x71cad:$0: ATwvXhg0JDYNWzQ6YVkYJyEoDVc7dD9CTSd0IkhOPDcjAw==
 0x7e2aa:$1: Gh8=
 0x83e09:$2: OTshTlkhdGtO
