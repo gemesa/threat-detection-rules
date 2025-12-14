@@ -180,12 +180,7 @@ $ sudo tail -f /var/log/suricata/fast.log
 ### YARA
 
 ```
-$ mkdir chrome-updater-unzipped
-$ cp ChromeUpdater.apk chrome-updater-unzipped/
-$ cd chrome-updater-unzipped
-$ unzip ChromeUpdater.apk
-$ rm ChromeUpdater.apk
-$ cd ..
+$ unzip ChromeUpdater.apk -d chrome-updater-unzipped
 $ yara -s fake_chrome_updater_xml_android.yar fake_chrome_updater_dex_android.yar -r chrome-updater-unzipped
 fake_chrome_updater_xml_android chrome-updater-unzipped/res/layout/main.xml
 0xff:$0: Google Chrome Updater
