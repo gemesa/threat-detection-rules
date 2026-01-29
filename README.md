@@ -1,5 +1,5 @@
 # threat-detection-rules
-Collection of YARA, Suricata and Sigma rules for detecting various malware threats. Sigma rules are only implemented for Linux or Windows hosts and are verified via `sigma check file.yml` but not tested otherwise.
+Collection of YARA (`.yar`), Suricata (`.rules`) and Sigma (`.yml`) rules for detecting various malware threats. Sigma rules are only implemented for Linux or Windows hosts and are verified via `sigma check file.yml` but not tested otherwise.
 
 # Qilin
 
