@@ -463,3 +463,24 @@ xloader_payload_android payload.dex
 0x5d96d:$field4: \xEC\x9C\xA0\xED\x9A\xA8\xEA\xB8\xB0\xEA\xB0\x84
 0x5dd90:$field5: \xEC\x9A\xB0\xED\x8E\xB8\xEB\xB2\x88\xED\x98\xB8
 ```
+
+# DCRat
+
+- [Analysis blog post](https://shadowshell.io/dcrat)
+
+- [Rules](dcrat)
+
+## Usage
+
+### YARA
+
+```
+$ yara dcrat.yar dcrat.exe 
+DCRat_salt dcrat.exe
+DCRat_AntiProcess dcrat.exe
+DCRat_AMSI_bypass dcrat.exe
+DCRat_VM_detection dcrat.exe
+DCRat_config dcrat.exe
+DCRat_MsgPack_packets dcrat.exe
+DCRat_persistence dcrat.exe
+```

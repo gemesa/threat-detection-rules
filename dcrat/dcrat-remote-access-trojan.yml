@@ -1,0 +1,241 @@
+title: DCRat scheduled task persistence
+id: 7cb527ed-71d3-4bdd-a65e-ac79b057bc94
+status: experimental
+description: Detects DCRat creating scheduled task for persistence with highest privileges.
+author: Andras Gemes
+references:
+  - https://shadowshell.io/dcrat
+  - https://github.com/gemesa/threat-detection-rules/tree/main/dcrat
+  - https://malpedia.caad.fkie.fraunhofer.de/details/win.dcrat
+# https://github.com/SigmaHQ/sigma-specification/blob/main/specification/sigma-appendix-taxonomy.md
+# https://github.com/SigmaHQ/sigma-specification/blob/main/specification/sigma-appendix-modifiers.md
+date: 2026/02/01
+logsource:
+  category: process_creation
+  product: windows
+detection:
+  selection:
+    CommandLine|contains|all:
+      - "schtasks"
+      - "/create"
+      - "/sc onlogon"
+      - "/rl highest"
+  condition: selection
+falsepositives:
+  - Legitimate software installation.
+  - Admin scripts.
+level: high
+tags:
+  # tactic - https://attack.mitre.org/tactics/enterprise/
+  - attack.persistence
+  # Scheduled Task/Job: Scheduled Task - https://attack.mitre.org/techniques/T1053/005/
+  - attack.t1053.005
+
+---
+title: DCRat registry run key persistence
+id: f7e5c961-e995-4f54-a404-a49e41f940fd
+status: experimental
+description: Detects DCRat adding registry Run key from AppData location.
+author: Andras Gemes
+references:
+  - https://shadowshell.io/dcrat
+  - https://github.com/gemesa/threat-detection-rules/tree/main/dcrat
+  - https://malpedia.caad.fkie.fraunhofer.de/details/win.dcrat
+# https://github.com/SigmaHQ/sigma-specification/blob/main/specification/sigma-appendix-taxonomy.md
+# https://github.com/SigmaHQ/sigma-specification/blob/main/specification/sigma-appendix-modifiers.md
+date: 2026/02/01
+logsource:
+  category: registry_set
+  product: windows
+detection:
+  selection:
+    TargetObject|contains: '\Software\Microsoft\Windows\CurrentVersion\Run\'
+    Details|contains: '\AppData\'
+  condition: selection
+falsepositives:
+  - Legitimate applications installing to AppData.
+level: medium
+tags:
+  # tactic - https://attack.mitre.org/tactics/enterprise/
+  - attack.persistence
+  # Boot or Logon Autostart Execution: Registry Run Keys / Startup Folder - https://attack.mitre.org/techniques/T1547/001/
+  - attack.t1547.001
+
+---
+title: DCRat security tool termination.
+id: 17d4708e-4be3-4b8f-8b6d-5b75c818267e
+status: experimental
+description: Detects DCRat killing security/analysis tools.
+author: Andras Gemes
+references:
+  - https://shadowshell.io/dcrat
+  - https://github.com/gemesa/threat-detection-rules/tree/main/dcrat
+  - https://malpedia.caad.fkie.fraunhofer.de/details/win.dcrat
+# https://github.com/SigmaHQ/sigma-specification/blob/main/specification/sigma-appendix-taxonomy.md
+# https://github.com/SigmaHQ/sigma-specification/blob/main/specification/sigma-appendix-modifiers.md
+date: 2026/02/01
+logsource:
+  category: process_termination
+  product: windows
+detection:
+  selection:
+    Image|endswith:
+      - '\Taskmgr.exe'
+      - '\ProcessHacker.exe'
+      - '\procexp.exe'
+      - '\MSASCui.exe.exe'
+      - '\MsMpEng.exe'
+      - '\MpUXSrv.exe'
+      - '\MpCmdRun.exe'
+      - '\NisSrv.exe'
+      - '\ConfigSecurityPolicy.exe'
+      - '\MSConfig.exe'
+      - '\Regedit.exe'
+      - '\UserAccountControlSettings.exe'
+      - '\taskkill.exe'
+  filter:
+    ParentImage|endswith:
+      - '\explorer.exe'
+      - '\cmd.exe'
+  condition: selection and not filter
+falsepositives:
+  - System shutdown.
+  - Windows updates.
+level: high
+tags:
+  # tactic - https://attack.mitre.org/tactics/enterprise/
+  - attack.defense-evasion
+  # Impair Defenses: Disable or Modify Tools - https://attack.mitre.org/techniques/T1562/001/
+  - attack.t1562.001
+
+---
+title: DCRat WMI VM detection
+id: 34d142d3-421d-4ea3-8db7-c134506f30ef
+status: experimental
+description: Detects DCRat querying WMI for VM detection.
+author: Andras Gemes
+references:
+  - https://shadowshell.io/dcrat
+  - https://github.com/gemesa/threat-detection-rules/tree/main/dcrat
+  - https://malpedia.caad.fkie.fraunhofer.de/details/win.dcrat
+# https://github.com/SigmaHQ/sigma-specification/blob/main/specification/sigma-appendix-taxonomy.md
+# https://github.com/SigmaHQ/sigma-specification/blob/main/specification/sigma-appendix-modifiers.md
+date: 2026/02/01
+logsource:
+  category: wmi
+  product: windows
+detection:
+  selection:
+    Query|contains:
+      - "Win32_CacheMemory"
+  condition: selection
+falsepositives:
+  - System inventory tools.
+  - Hardware monitoring software.
+level: medium
+tags:
+  # tactic - https://attack.mitre.org/tactics/enterprise/
+  - attack.defense-evasion
+  # Virtualization/Sandbox Evasion: System Checks - https://attack.mitre.org/techniques/T1497/001/
+  - attack.t1497.001
+
+---
+title: DCRat pastebin C2 resolution
+id: a81ea27c-b670-4cf9-89ca-f519ee4dd44c
+status: experimental
+description: Detects potential DCRat fetching C2 config from Pastebin.
+author: Andras Gemes
+references:
+  - https://shadowshell.io/dcrat
+  - https://github.com/gemesa/threat-detection-rules/tree/main/dcrat
+  - https://malpedia.caad.fkie.fraunhofer.de/details/win.dcrat
+# https://github.com/SigmaHQ/sigma-specification/blob/main/specification/sigma-appendix-taxonomy.md
+# https://github.com/SigmaHQ/sigma-specification/blob/main/specification/sigma-appendix-modifiers.md
+date: 2026/02/01
+logsource:
+  category: proxy
+  product: windows
+detection:
+  selection:
+    c-uri|contains:
+      - "pastebin.com/raw/"
+      - "pastebin.pl/view/raw/"
+      - "paste.ee/r/"
+  filter:
+    cs-user-agent|contains:
+      - "Mozilla"
+      - "Chrome"
+      - "Firefox"
+  condition: selection and not filter
+falsepositives:
+  - Developers using pastebin programmatically.
+level: medium
+tags:
+  # tactic - https://attack.mitre.org/tactics/enterprise/
+  - attack.command-and-control
+  # Web Service: Dead Drop Resolver - https://attack.mitre.org/techniques/T1102/001/
+  - attack.t1102.001
+
+---
+title: DCRat plugin storage in registry.
+id: 9be0db7f-0298-4000-86f8-73eb96141c34
+status: experimental
+description: Detects DCRat storing plugin DLLs in registry under HWID-named key.
+author: Andras Gemes
+references:
+  - https://shadowshell.io/dcrat
+  - https://github.com/gemesa/threat-detection-rules/tree/main/dcrat
+  - https://malpedia.caad.fkie.fraunhofer.de/details/win.dcrat
+# https://github.com/SigmaHQ/sigma-specification/blob/main/specification/sigma-appendix-taxonomy.md
+# https://github.com/SigmaHQ/sigma-specification/blob/main/specification/sigma-appendix-modifiers.md
+date: 2026/02/01
+logsource:
+  category: registry_set
+  product: windows
+detection:
+  selection:
+    TargetObject|re: '\\Software\\[A-F0-9]{20}\\'
+  condition: selection
+falsepositives:
+  - Unknown.
+level: high
+tags:
+  # tactic - https://attack.mitre.org/tactics/enterprise/
+  - attack.persistence
+  # Modify Registry - https://attack.mitre.org/techniques/T1112/
+  - attack.t1112
+
+---
+title: DCRat self-deletion batch script.
+id: 3e14744b-9c2d-4bd8-b5c1-63a0d8b1f4a0
+status: experimental
+description: Detects DCRat self-deletion batch script pattern.
+author: Andras Gemes
+references:
+  - https://shadowshell.io/dcrat
+  - https://github.com/gemesa/threat-detection-rules/tree/main/dcrat
+  - https://malpedia.caad.fkie.fraunhofer.de/details/win.dcrat
+# https://github.com/SigmaHQ/sigma-specification/blob/main/specification/sigma-appendix-taxonomy.md
+# https://github.com/SigmaHQ/sigma-specification/blob/main/specification/sigma-appendix-modifiers.md
+date: 2026/02/01
+logsource:
+  category: process_creation
+  product: windows
+detection:
+  selection_parent:
+    ParentCommandLine|contains:
+      - ".tmp.bat"
+  selection_cmd:
+    CommandLine|contains|all:
+      - "timeout"
+      - "START"
+      - "DEL"
+  condition: selection_parent or selection_cmd
+falsepositives:
+  - Legitimate installers.
+level: medium
+tags:
+  # tactic - https://attack.mitre.org/tactics/enterprise/
+  - attack.defense-evasion
+  # Indicator Removal: File Deletion - https://attack.mitre.org/techniques/T1070/004/
+  - attack.t1070.004
