@@ -484,3 +484,23 @@ DCRat_config dcrat.exe
 DCRat_MsgPack_packets dcrat.exe
 DCRat_persistence dcrat.exe
 ```
+
+# Remcos
+
+- [Analysis blog post](https://shadowshell.io/remcos)
+
+- [Rules](remcos)
+
+## Usage
+
+### YARA
+
+```
+$ yara remcos.yar remcos.exe
+Remcos_version_agent_breakingsecurity_strings remcos.exe
+Remcos_keylogger_strings remcos.exe
+Remcos_uac_disable remcos.exe
+Remcos_audio_recording remcos.exe
+Remcos_c2_strings remcos.exe
+Remcos_combined remcos.exe
+```

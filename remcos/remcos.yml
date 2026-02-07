@@ -1,0 +1,89 @@
+title: Remcos RAT registry persistence
+id: fab3dda4-779f-4cf7-91b0-ca3d18c013d9
+status: experimental
+description: Detects Remcos RAT adding registry Run key for persistence.
+author: Andras Gemes
+references:
+  - https://shadowshell.io/remcos
+  - https://github.com/gemesa/threat-detection-rules/tree/main/remcos
+  - https://malpedia.caad.fkie.fraunhofer.de/details/win.remcos
+# https://github.com/SigmaHQ/sigma-specification/blob/main/specification/sigma-appendix-taxonomy.md
+# https://github.com/SigmaHQ/sigma-specification/blob/main/specification/sigma-appendix-modifiers.md
+date: 2026/02/08
+logsource:
+  category: registry_set
+  product: windows
+detection:
+  selection_path:
+    TargetObject|contains: '\Software\Microsoft\Windows\CurrentVersion\Run\'
+  selection_remcos:
+    Details|contains:
+      - "remcos"
+      - "Rmc-"
+  condition: selection_path and selection_remcos
+falsepositives:
+  - Legitimate remote administration tools.
+level: high
+tags:
+  # tactic - https://attack.mitre.org/tactics/enterprise/
+  - attack.persistence
+  # Boot or Logon Autostart Execution: Registry Run Keys / Startup Folder - https://attack.mitre.org/techniques/T1547/001/
+  - attack.t1547.001
+---
+title: Remcos RAT UAC bypass via registry
+id: 497780e1-b73d-44e3-8a64-c88e7fe81cb7
+status: experimental
+description: Detects Remcos RAT disabling UAC via EnableLUA registry modification.
+author: Andras Gemes
+references:
+  - https://shadowshell.io/remcos
+  - https://github.com/gemesa/threat-detection-rules/tree/main/remcos
+  - https://malpedia.caad.fkie.fraunhofer.de/details/win.remcos
+# https://github.com/SigmaHQ/sigma-specification/blob/main/specification/sigma-appendix-taxonomy.md
+# https://github.com/SigmaHQ/sigma-specification/blob/main/specification/sigma-appendix-modifiers.md
+date: 2026/02/08
+logsource:
+  category: registry_set
+  product: windows
+detection:
+  selection:
+    TargetObject|endswith: '\Policies\System\EnableLUA'
+    Details|contains:
+      - "DWORD (0x00000000)" # Sysmon
+  condition: selection
+falsepositives:
+  - System administrators disabling UAC intentionally.
+level: high
+tags:
+  # tactic - https://attack.mitre.org/tactics/enterprise/
+  - attack.defense-evasion
+  # Abuse Elevation Control Mechanism: Bypass User Account Control - https://attack.mitre.org/techniques/T1548/002/
+  - attack.t1548.002
+---
+title: Remcos RAT geolocation check
+id: 3795bdb9-d9a7-4173-a63f-3ae821719fb6
+status: experimental
+description: Detects Remcos RAT querying geoplugin.net for victim geolocation.
+author: Andras Gemes
+references:
+  - https://shadowshell.io/remcos
+  - https://github.com/gemesa/threat-detection-rules/tree/main/remcos
+  - https://malpedia.caad.fkie.fraunhofer.de/details/win.remcos
+# https://github.com/SigmaHQ/sigma-specification/blob/main/specification/sigma-appendix-taxonomy.md
+# https://github.com/SigmaHQ/sigma-specification/blob/main/specification/sigma-appendix-modifiers.md
+date: 2026/02/08
+logsource:
+  category: dns_query
+  product: windows
+detection:
+  selection:
+    QueryName|endswith: "geoplugin.net"
+  condition: selection
+falsepositives:
+  - Legitimate applications checking geolocation.
+level: medium
+tags:
+  # tactic - https://attack.mitre.org/tactics/enterprise/
+  - attack.discovery
+  # System Location Discovery - https://attack.mitre.org/techniques/T1614/
+  - attack.t1614
