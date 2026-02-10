@@ -485,6 +485,21 @@ DCRat_MsgPack_packets dcrat.exe
 DCRat_persistence dcrat.exe
 ```
 
+### Suricata
+
+```
+$ cat dcrat.rules
+alert dns any any -> any any (msg:"DCRat C2 DNS lookup (sky01.publicvm.com)"; dns.query; content:"sky01.publicvm.com"; nocase; classtype:trojan-activity; sid:1000001; rev:1;)
+alert tcp any any -> any 9217 (msg:"DCRat C2 beacon (MessagePack)"; flow:to_server,established; content:"Pac_ket"; content:"ClientInfo"; content:"HWID"; content:"Anti_virus"; classtype:trojan-activity; sid:1000002; rev:1;)
+$ sudo tcpdump -i lo -w /tmp/dcrat.pcap
+$ sudo suricata -r /tmp/dcrat.pcap -l /tmp/suricata/ -s dcrat.rules
+$ cat /tmp/suricata/fast.log 
+...
+02/10/2026-16:09:07.371704  [**] [1:1000001:1] DCRat C2 beacon (MessagePack) [**] [Classification: A Network Trojan was detected] [Priority: 1] {TCP} 10.0.2.15:35492 -> 10.0.2.15:9217
+02/10/2026-20:22:30.650742  [**] [1:1000001:1] DCRat C2 DNS lookup (sky01.publicvm.com) [**] [Classification: A Network Trojan was detected] [Priority: 1] {UDP} 192.168.1.100:12345 -> 8.8.8.8:53
+...
+```
+
 # Remcos
 
 - [Analysis blog post](https://shadowshell.io/remcos)
