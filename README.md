@@ -519,3 +519,14 @@ Remcos_audio_recording remcos.exe
 Remcos_c2_strings remcos.exe
 Remcos_combined remcos.exe
 ```
+
+### Suricata
+
+```
+$ cat remcos.rules
+alert dns any any -> any any (msg:"Remcos C2 DNS lookup (gdyhjjdhbvxgsfe.gotdns.ch)"; dns.query; content:"gdyhjjdhbvxgsfe.gotdns.ch"; nocase; classtype:trojan-activity; sid:1000001; rev:1;)
+$ sudo tcpdump -i lo -w /tmp/remcos.pcap
+$ sudo suricata -r /tmp/remcos.pcap -l /tmp/suricata/ -s remcos.rules
+$ cat /tmp/suricata/fast.log 
+02/10/2026-20:46:37.084883  [**] [1:1000001:1] Remcos C2 DNS lookup (gdyhjjdhbvxgsfe.gotdns.ch) [**] [Classification: A Network Trojan was detected] [Priority: 1] {UDP} 192.168.1.100:12345 -> 8.8.8.8:53
+```
