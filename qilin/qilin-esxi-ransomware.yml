@@ -1,3 +1,9 @@
+# Note:
+# ESXi supports neither Sysmon nor auditd.
+# The following rules use the Sysmon schema (e.g. process_creation) as a convention.
+# ESXi syslog must be parsed and normalized
+# to map to fields such as Image and CommandLine.
+
 title: Qilin ESXi ransomware - VM kill commands
 id: a11306e8-d1aa-43f2-bb4a-f9998e15d2bf
 status: experimental
