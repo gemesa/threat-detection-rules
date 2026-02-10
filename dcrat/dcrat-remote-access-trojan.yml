@@ -83,7 +83,7 @@ detection:
       - '\Taskmgr.exe'
       - '\ProcessHacker.exe'
       - '\procexp.exe'
-      - '\MSASCui.exe.exe'
+      - '\MSASCui.exe'
       - '\MsMpEng.exe'
       - '\MpUXSrv.exe'
       - '\MpCmdRun.exe'
@@ -159,14 +159,7 @@ detection:
   selection:
     c-uri|contains:
       - "pastebin.com/raw/"
-      - "pastebin.pl/view/raw/"
-      - "paste.ee/r/"
-  filter:
-    cs-user-agent|contains:
-      - "Mozilla"
-      - "Chrome"
-      - "Firefox"
-  condition: selection and not filter
+  condition: selection
 falsepositives:
   - Developers using pastebin programmatically.
 level: medium
