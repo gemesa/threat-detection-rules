@@ -1,3 +1,12 @@
+# Note:
+# Mirai primarily targets IoT/embedded devices where neither
+# Sysmon nor auditd is available. These rules are intended for
+# use on Linux honeypots or general-purpose Linux systems.
+#
+# File watches must be configured accordingly, e.g.:
+#   sudo auditctl -w /dev/watchdog -p rwa -k mirai_watchdog
+#   sudo auditctl -w /dev/misc/watchdog -p rwa -k mirai_watchdog
+
 title: Mirai SORA - watchdog manipulation
 id: 7b0b4447-3a21-467e-b530-6f93c39a3d2c
 status: experimental
@@ -13,10 +22,11 @@ references:
 # https://github.com/SigmaHQ/sigma-specification/blob/main/specification/sigma-appendix-modifiers.md
 logsource:
   product: linux
-  category: file_event
+  service: auditd
 detection:
   selection:
-    TargetFilename:
+    type: PATH
+    name:
       - "/dev/watchdog"
       - "/dev/misc/watchdog"
   condition: selection
@@ -45,12 +55,12 @@ references:
 # https://github.com/SigmaHQ/sigma-specification/blob/main/specification/sigma-appendix-modifiers.md
 logsource:
   product: linux
-  category: process_creation
+  service: auditd
 detection:
   selection:
-    CommandLine|contains|all:
-      - "busybox"
-      - "SORA"
+    type: EXECVE
+    a0|contains: "busybox"
+    a1|contains: "SORA"
   condition: selection
 falsepositives:
   - Unlikely
@@ -77,10 +87,11 @@ references:
 # https://github.com/SigmaHQ/sigma-specification/blob/main/specification/sigma-appendix-modifiers.md
 logsource:
   product: linux
-  category: file_access
+  service: auditd
 detection:
   selection:
-    TargetFilename|endswith: ".anime"
+    type: PATH
+    name|endswith: ".anime"
   condition: selection
 falsepositives:
   - Unlikely
