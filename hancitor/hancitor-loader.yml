@@ -1,40 +1,3 @@
-title: Hancitor C2 beacon - network connection
-id: 9d334d0d-7934-40d1-97ea-23f7c2c4276a
-status: experimental
-description: |
-  Detects network connections matching Hancitor C2 beacon pattern.
-  Based on Suricata rule detecting POST requests with Hancitor beacon format.
-author: Andras Gemes
-date: 2025/02/18
-references:
-  - https://shadowshell.io/hancitor-loader
-  - https://github.com/gemesa/threat-detection-rules/tree/main/hancitor
-# https://github.com/SigmaHQ/sigma-specification/blob/main/specification/sigma-appendix-taxonomy.md
-# https://github.com/SigmaHQ/sigma-specification/blob/main/specification/sigma-appendix-modifiers.md
-logsource:
-  category: network_connection
-  product: windows
-detection:
-  selection:
-    Initiated: true
-    DestinationPort: 80
-  filter_known_good:
-    DestinationIp|startswith:
-      # Tweak this as necessary.
-      - "10."
-      - "172.16."
-      - "192.168."
-  condition: selection and not filter_known_good
-falsepositives:
-  - Legitimate HTTP traffic (requires correlation with other indicators)
-level: low
-tags:
-  # tactic - https://attack.mitre.org/tactics/enterprise/
-  - attack.command-and-control
-  # Application Layer Protocol: Web Protocols  - https://attack.mitre.org/techniques/T1071/001/
-  - attack.t1071.001
-
----
 title: Hancitor - Rundll32 DLL execution pattern
 id: 16434811-0279-42fe-b80a-4e3768eab8f9
 status: experimental
@@ -52,10 +15,10 @@ logsource:
   category: process_creation
   product: windows
 detection:
-  selection_rundll32:
+  selection:
     Image|endswith: '\rundll32.exe'
     CommandLine|contains: ", start"
-  condition: selection_rundll32
+  condition: selection
 falsepositives:
   - Some legitimate software may use similar patterns
 level: medium
@@ -63,7 +26,7 @@ tags:
   # tactic - https://attack.mitre.org/tactics/enterprise/
   - attack.execution
   - attack.defense-evasion
-  # System Binary Proxy Execution: Rundll32  - https://attack.mitre.org/techniques/T1218/011/
+  # System Binary Proxy Execution: Rundll32 - https://attack.mitre.org/techniques/T1218/011/
   - attack.t1218.011
 
 ---
