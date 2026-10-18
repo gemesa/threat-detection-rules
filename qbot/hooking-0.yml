@@ -1,0 +1,31 @@
+rule:
+  meta:
+    name: install API hooks using encrypted function references
+    namespace: persistence/hooking
+    authors:
+      - gemesa@protonmail.com
+    scopes:
+      static: function
+      dynamic: unsupported
+    att&ck:
+      - Execution::Native API [T1106]
+      - Defense Evasion::Obfuscated Files or Information [T1027]
+      - Collection::Man in the Browser [T1185]
+    mbc:
+      - Collection::API Hooking [F0015]
+      - Anti-Static Analysis::Obfuscated Files or Information::Encryption-Standard Algorithm [B0001.005]
+    description: >
+      Iterates over an array of encrypted entries, decrypts module and function
+      names at runtime, resolves them with GetModuleHandleA/GetProcAddress,
+      then installs inline hooks. Decrypted strings are wiped after use to
+      hinder forensic analysis.
+  features:
+    - and:
+      - api: kernel32.GetModuleHandleA
+      - api: kernel32.GetProcAddress
+      - basic block:
+        - and:
+          - api: kernel32.GetModuleHandleA
+          - api: kernel32.GetProcAddress
+      - characteristic: loop
+      - characteristic: calls to

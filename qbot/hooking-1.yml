@@ -1,0 +1,24 @@
+rule:
+  meta:
+    name: install hooks in Chrome browser via PE section scanning
+    namespace: persistence/hooking/browser
+    authors:
+      - gemesa@protonmail.com
+    scopes:
+      static: function
+      dynamic: unsupported
+    att&ck:
+      - Collection::Man in the Browser [T1185]
+    mbc:
+      - Collection::API Hooking [F0015]
+    description: >
+      Parses the PE header of a loaded Chrome module, locates the .text
+      section, searches for known code signatures from an internal table,
+      and patches matching addresses to install inline hooks.
+  features:
+    - and:
+      - api: kernel32.lstrcmpA
+      - string: ".text"
+      - number: 0x4550
+      - number: 0x30C
+      - number: 0x102

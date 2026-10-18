@@ -611,3 +611,68 @@ linkinfo_DLL_injection_shellcode ../tmp/worm.dll
 ### Sigma
 
 The rules are verified via `sigma check file.yml` but not tested otherwise. Additionally, they are formatted via `npx prettier --write file.yml`.
+
+# QBot
+
+- [Analysis blog post](https://shadowshell.io/qbot-interceptor)
+
+- [Rules](qbot)
+
+## Usage
+
+### YARA
+
+```
+$ yara qbot_hooks.yar ../tmp/payload_32bit.dll 
+qbot_install_hooks ../tmp/payload_32bit.dll
+qbot_install_chrome_hooks ../tmp/payload_32bit.dll
+qbot_chrome_boringssl_signature_table ../tmp/payload_32bit.dll
+qbot_hook_table_firefox_ssl ../tmp/payload_32bit.dll
+qbot_hook_table_wininet ../tmp/payload_32bit.dll
+qbot_hook_table_core_0 ../tmp/payload_32bit.dll
+qbot_hook_table_core_1 ../tmp/payload_32bit.dll
+qbot_hook_table_messageloop ../tmp/payload_32bit.dll
+```
+
+```
+$ yara qbot_string_decryptor.yar ../tmp/payload_32bit.dll 
+qbot_string_decryptor ../tmp/payload_32bit.dll
+```
+
+### capa
+
+```
+$ capa -r rules/ ../tmp/payload_32bit.dll 
+┌───────────┬──────────────────────────────────────────────────────────────────┐
+│ md5       │ 6e393f179b71d6ac848668e26c2cd236                                 │
+│ sha1      │ 50cf91ee5ff2c723ce18745cff0c0f5648e3a5e5                         │
+│ sha256    │ 4229f9f1c316c207783f484ba2bc518074180f87ddb01e47328a4f6f23f97089 │
+│ analysis  │ static                                                           │
+│ os        │ windows                                                          │
+│ format    │ pe                                                               │
+│ arch      │ i386                                                             │
+│ path      │ /home/gemesa/git-repos/group-ib/tmp/payload_32bit.dll            │
+└───────────┴──────────────────────────────────────────────────────────────────┘
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ ATT&CK Tactic             ┃ ATT&CK Technique                                 ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│ COLLECTION                │ Man in the Browser [T1185]                       │
+│ DEFENSE EVASION           │ Obfuscated Files or Information [T1027]          │
+│ EXECUTION                 │ Native API [T1106]                               │
+└───────────────────────────┴──────────────────────────────────────────────────┘
+┏━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ MBC Objective        ┃ MBC Behavior                                          ┃
+┡━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│ ANTI-STATIC ANALYSIS │ Obfuscated Files or Information::Encryption-Standard  │
+│                      │ Algorithm [B0001.005]                                 │
+│ COLLECTION           │ API Hooking [F0015]                                   │
+└──────────────────────┴───────────────────────────────────────────────────────┘
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ Capability                                     ┃ Namespace                   ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│ install API hooks using encrypted function     │ persistence/hooking         │
+│ references                                     │                             │
+│ install hooks in Chrome browser via PE section │ persistence/hooking/browser │
+│ scanning                                       │                             │
+└────────────────────────────────────────────────┴─────────────────────────────┘
+```
