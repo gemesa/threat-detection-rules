@@ -1,0 +1,182 @@
+## Sigma rule 1: thread execution hijacking via suspended browser process.
+## Detects T1055.003: Browser spawned by explorer without a URL.
+
+title: Suspicious suspended browser process creation for thread hijacking
+id: 4a52869c-6826-445e-8547-130a0f4317ac
+status: experimental
+description: |
+  Detects a browser process spawned by explorer.exe without a URL on the command line.
+  The malware reads the default browser from htmlfile\shell\open\command and launches it
+  with CREATE_SUSPENDED. Since the browser is started for injection (not user browsing),
+  it has no URL argument.
+references:
+  - https://attack.mitre.org/techniques/T1055/003/
+author: gemesa@protonmail.com
+date: 2025-02-16
+tags:
+  - attack.defense-evasion
+  - attack.privilege-escalation
+  - attack.t1055.003
+logsource:
+  category: process_creation
+  product: windows
+detection:
+  selection:
+    ParentImage|endswith: '\explorer.exe'
+    Image|endswith:
+      # Tune this list.
+      - '\iexplore.exe'
+      - '\firefox.exe'
+      - '\chrome.exe'
+      - '\msedge.exe'
+      - '\opera.exe'
+      - '\brave.exe'
+  filter_user_browsing:
+    CommandLine|contains:
+      - "http://"
+      - "https://"
+      - ".html"
+      - ".htm"
+  condition: selection and not filter_user_browsing
+level: high
+falsepositives:
+  - Software that opens browsers without a URL.
+
+---
+## Sigma rule 2: APC injection into explorer.exe.
+## Detects T1055.004: Any non-standard process opening explorer with full access.
+
+title: Suspicious full access to explorer.exe by non-standard process
+id: 4aca5732-fe84-42bb-aee4-94baaf731004
+status: experimental
+description: |
+  Detects any process opening explorer.exe with PROCESS_ALL_ACCESS
+  permissions. The APC injection path is triggered from an infected
+  EXE (which could be any process name), so this rule does not filter by source image.
+  Instead it flags any non-OS process requesting full access to explorer.
+references:
+  - https://attack.mitre.org/techniques/T1055/004/
+author: gemesa@protonmail.com
+date: 2025-02-16
+tags:
+  - attack.defense-evasion
+  - attack.privilege-escalation
+  - attack.t1055.004
+logsource:
+  category: process_access
+  product: windows
+detection:
+  selection:
+    TargetImage|endswith: '\explorer.exe'
+    GrantedAccess|contains:
+      # https://learn.microsoft.com/en-us/windows/win32/procthread/process-security-and-access-rights
+      - "0x1F0FFF" # PROCESS_ALL_ACCESS (pre-Vista)
+      - "0x1FFFFF" # PROCESS_ALL_ACCESS (Vista+)
+  filter_os_processes:
+    SourceImage|endswith:
+      # Tune this list.
+      - '\csrss.exe'
+      - '\lsass.exe'
+      - '\winlogon.exe'
+      - '\dwm.exe'
+      - '\sihost.exe'
+      - '\SearchIndexer.exe'
+      - '\ShellExperienceHost.exe'
+      - '\RuntimeBroker.exe'
+  filter_security_tools:
+    SourceImage|endswith:
+      # Tune this list.
+      - '\MsMpEng.exe'
+      - '\taskmgr.exe'
+      - '\procexp.exe'
+      - '\procexp64.exe'
+  condition: selection and not 1 of filter_*
+level: high
+falsepositives:
+  - Unknown. Tune based on environment.
+
+---
+## Sigma rule 3: linkinfo.dll loaded from non-system directory.
+## Detects the malware DLL being loaded after drop or search-order hijack.
+
+title: linkinfo.dll loaded from non-system directory
+id: a8cb10b2-6be2-49f5-a7bc-14149573f4e5
+status: experimental
+description: |
+  Detects linkinfo.dll being loaded from outside System32. The shellcode stub drops
+  the malware DLL as %TEMP%\linkinfo.dll and loads it via LoadLibraryA. A legitimate
+  linkinfo.dll load should always come from System32.
+references:
+  - https://attack.mitre.org/techniques/T1055/004/
+  - https://attack.mitre.org/techniques/T1574/001/
+author: gemesa@protonmail.com
+date: 2025-02-16
+tags:
+  - attack.defense-evasion
+  - attack.persistence
+  - attack.t1055.004
+  - attack.t1574.001
+logsource:
+  category: image_load
+  product: windows
+detection:
+  selection:
+    # https://github.com/trustedsec/SysmonCommunityGuide/blob/master/Build/Sysmon.md#image-loading
+    ImageLoaded|endswith: '\linkinfo.dll'
+  filter_legitimate:
+    ImageLoaded|contains:
+      - '\Windows\System32\linkinfo.dll'
+      - '\Windows\SysWOW64\linkinfo.dll'
+  condition: selection and not filter_legitimate
+level: critical
+falsepositives:
+  - Very unlikely. linkinfo.dll should only exist in System32/SysWOW64.
+
+---
+## Sigma rule 4: SeDebugPrivilege escalation by non-standard process.
+## Detects the privilege escalation step before the APC injection.
+
+title: SeDebugPrivilege enabled by non-standard process
+id: 08366b73-1242-450f-966b-f5703e67ceb9
+status: experimental
+description: |
+  Detects a process enabling SeDebugPrivilege via AdjustTokenPrivileges. This is a
+  prerequisite for the APC injection. The malware needs it to call
+  OpenProcess(PROCESS_ALL_ACCESS) on explorer.exe. Since the source process is an
+  infected EXE (any name), this rule flags any non-standard process enabling this
+  privilege.
+references:
+  - https://attack.mitre.org/techniques/T1055/004/
+author: gemesa@protonmail.com
+date: 2025-02-16
+tags:
+  - attack.privilege-escalation
+  - attack.t1055.004
+logsource:
+  product: windows
+  service: security
+detection:
+  selection:
+    # https://learn.microsoft.com/en-us/previous-versions/windows/it-pro/windows-10/security/threat-protection/auditing/event-4703
+    EventID: 4703
+    EnabledPrivilegeList|contains: "SeDebugPrivilege"
+  filter_known_legitimate:
+    ProcessName|endswith:
+      # Tune this list.
+      - '\taskmgr.exe'
+      - '\procexp.exe'
+      - '\procexp64.exe'
+      - '\procmon.exe'
+      - '\procmon64.exe'
+      - '\MsMpEng.exe'
+      - '\csrss.exe'
+      - '\windbg.exe'
+      - '\x64dbg.exe'
+      - '\devenv.exe'
+      - '\msvsmon.exe'
+      - '\WerFault.exe'
+  condition: selection and not filter_known_legitimate
+level: medium
+falsepositives:
+  - Debuggers and RE tools.
+  - Security/EDR products.

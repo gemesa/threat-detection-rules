@@ -590,3 +590,24 @@ $ capa -r rules/ ../tmp/spambot.exe
 │ authenticate using HMAC-MD5 for CRAM-MD5 (2 matches)   │ data-manipulation/hmac                  │
 └────────────────────────────────────────────────────────┴─────────────────────────────────────────┘
 ```
+
+# Almanahe
+
+- [Analysis blog post](https://shadowshell.io/almanahe-worm)
+
+- [Rules](almanahe)
+
+## Usage
+
+### YARA
+
+```
+$ yara worm.yar ../tmp/worm.dll
+thread_execution_hijacking_suspended_browser ../tmp/worm.dll
+APC_injection_explorer_LoadLibrary ../tmp/worm.dll
+linkinfo_DLL_injection_shellcode ../tmp/worm.dll
+```
+
+### Sigma
+
+The rules are verified via `sigma check file.yml` but not tested otherwise. Additionally, they are formatted via `npx prettier --write file.yml`.
