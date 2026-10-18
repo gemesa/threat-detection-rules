@@ -1,0 +1,26 @@
+rule:
+  meta:
+    name: authenticate using HMAC-MD5 for CRAM-MD5
+    namespace: data-manipulation/hmac
+    authors:
+      - gemesa@protonmail.com
+    description: >-
+      Detects the custom HMAC-MD5 implementation (FUN_0044bf00) used for
+      CRAM-MD5 SMTP authentication. Identified by the ipad (0x36) and
+      opad (0x5C) XOR constants with MD5 block size (0x40).
+    scopes:
+      static: function
+      dynamic: unsupported
+    mbc:
+      - Cryptography::Hashed Message Authentication Code [C0061]
+    references:
+      - https://www.virustotal.com/gui/file/36684cef31a4a43473d5b12d30aabf94f56e407b0eeec14b7c1cb87efa3159b6
+    examples:
+      - 88B43801B38ACEA324467ECE3F12A0E0:0x0044BF00
+  features:
+    - and:
+      - number: 0x36 = HMAC ipad byte
+      - number: 0x5C = HMAC opad byte
+      - number: 0x40 = MD5/SHA1 block size
+      - characteristic: loop
+      - count(characteristic(nzxor)): 2 or more

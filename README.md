@@ -1,5 +1,5 @@
 # threat-detection-rules
-Collection of YARA (`.yar`), Suricata (`.rules`) and Sigma (`.yml`) rules for detecting various malware threats. Sigma rules are only implemented for Linux or Windows hosts and are verified via `sigma check file.yml` but not tested otherwise. Additionally, Sigma rules are formatted via `prettier --write file.yml`.
+Collection of YARA (`.yar`), Suricata (`.rules`), Sigma (`.yml`) and capa (`.yml`) rules for detecting various malware threats. Sigma rules are only implemented for Linux or Windows hosts and are verified via `sigma check file.yml` but not tested otherwise. Additionally, Sigma rules are formatted via `prettier --write file.yml`.
 
 # Qilin
 
@@ -529,4 +529,64 @@ $ sudo tcpdump -i lo -w /tmp/remcos.pcap
 $ sudo suricata -r /tmp/remcos.pcap -l /tmp/suricata/ -s remcos.rules
 $ cat /tmp/suricata/fast.log 
 02/10/2026-20:46:37.084883  [**] [1:1000001:1] Remcos C2 DNS lookup (gdyhjjdhbvxgsfe.gotdns.ch) [**] [Classification: A Network Trojan was detected] [Priority: 1] {UDP} 192.168.1.100:12345 -> 8.8.8.8:53
+```
+
+# Spambot
+
+- [Analysis blog post](https://shadowshell.io/spambot)
+
+- [Rules](spambot)
+
+## Usage
+
+### YARA
+
+```
+$ yara rules/spambot.yar ../tmp/spambot.exe
+spambot_xor_cipher ../tmp/spambot.exe
+spambot_blowfish_config ../tmp/spambot.exe
+spambot_zipcrypto ../tmp/spambot.exe
+spambot_hmac_md5 ../tmp/spambot.exe
+spambot_dkim_domainkeys ../tmp/spambot.exe
+spambot_weak_prng ../tmp/spambot.exe
+```
+
+### capa
+
+```
+$ capa -r rules/ ../tmp/spambot.exe                       
+┌─────────────┬────────────────────────────────────────────────────────────────────────────────────┐
+│ md5         │ 88b43801b38acea324467ece3f12a0e0                                                   │
+│ sha1        │ 1004d87f61c461c3d4d4f0ff7f40c5da0a279e4e                                           │
+│ sha256      │ 36684cef31a4a43473d5b12d30aabf94f56e407b0eeec14b7c1cb87efa3159b6                   │
+│ analysis    │ static                                                                             │
+│ os          │ windows                                                                            │
+│ format      │ pe                                                                                 │
+│ arch        │ i386                                                                               │
+│ path        │ /home/gemesa/git-repos/group-ib/tmp/spambot.exe                                    │
+└─────────────┴────────────────────────────────────────────────────────────────────────────────────┘
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ ATT&CK Tactic                 ┃ ATT&CK Technique                                                 ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│ DEFENSE EVASION               │ Deobfuscate/Decode Files or Information [T1140]                  │
+│                               │ Obfuscated Files or Information [T1027]                          │
+└───────────────────────────────┴──────────────────────────────────────────────────────────────────┘
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ MBC Objective                   ┃ MBC Behavior                                                   ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│ CRYPTOGRAPHY                    │ Cryptographic Hash::MD5 [C0029.001]                            │
+│                                 │ Encrypt Data [C0027]                                           │
+│                                 │ Encrypt Data::Blowfish [C0027.002]                             │
+│                                 │ Hashed Message Authentication Code [C0061]                     │
+│ DATA                            │ Encode Data::XOR [C0026.002]                                   │
+└─────────────────────────────────┴────────────────────────────────────────────────────────────────┘
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ Capability                                             ┃ Namespace                               ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│ decrypt config using Blowfish-ECB with hardcoded key   │ data-manipulation/encryption/blowfish   │
+│ encrypt C2 traffic using XOR with static MD5 key       │ data-manipulation/encryption/xor        │
+│ initialize ZipCrypto key state (2 matches)             │ data-manipulation/encryption/zipcrypto  │
+│ hash data using custom MD5                             │ data-manipulation/hashing/md5           │
+│ authenticate using HMAC-MD5 for CRAM-MD5 (2 matches)   │ data-manipulation/hmac                  │
+└────────────────────────────────────────────────────────┴─────────────────────────────────────────┘
 ```

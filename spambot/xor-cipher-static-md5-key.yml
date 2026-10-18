@@ -1,0 +1,28 @@
+rule:
+  meta:
+    name: encrypt C2 traffic using XOR with static MD5 key
+    namespace: data-manipulation/encryption/xor
+    authors:
+      - gemesa@protonmail.com
+    description: >-
+      Detects the XOR cipher function (FUN_004680d0) that derives a 16-byte
+      key from MD5("UNREGISTERED") and applies it cyclically over a buffer.
+    scopes:
+      static: function
+      dynamic: unsupported
+    att&ck:
+      - Defense Evasion::Obfuscated Files or Information [T1027]
+    mbc:
+      - Cryptography::Encrypt Data [C0027]
+      - Data::Encode Data::XOR [C0026.002]
+    references:
+      - https://www.virustotal.com/gui/file/36684cef31a4a43473d5b12d30aabf94f56e407b0eeec14b7c1cb87efa3159b6
+    examples:
+      - 88B43801B38ACEA324467ECE3F12A0E0:0x004680D0
+  features:
+    - and:
+      - string: "UNREGISTERED"
+      - number: 0x0C = length of "UNREGISTERED"
+      - number: 0x0F = AND mask for 16-byte key cycling
+      - characteristic: nzxor
+      - characteristic: loop

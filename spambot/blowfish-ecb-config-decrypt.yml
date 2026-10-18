@@ -1,0 +1,39 @@
+rule:
+  meta:
+    name: decrypt config using Blowfish-ECB with hardcoded key
+    namespace: data-manipulation/encryption/blowfish
+    authors:
+      - gemesa@protonmail.com
+    description: >-
+      Detects the Blowfish key schedule function (FUN_00421d20) identified by
+      the P-array and S-box initialization constants. The application uses
+      Blowfish-ECB with a hardcoded 16-byte key to decrypt C2 configuration
+      stored in PE resource RT_RCDATA/0xE2.
+    scopes:
+      static: function
+      dynamic: unsupported
+    att&ck:
+      - Defense Evasion::Deobfuscate/Decode Files or Information [T1140]
+    mbc:
+      - Cryptography::Encrypt Data::Blowfish [C0027.002]
+    references:
+      - https://www.virustotal.com/gui/file/36684cef31a4a43473d5b12d30aabf94f56e407b0eeec14b7c1cb87efa3159b6
+    examples:
+      - 88B43801B38ACEA324467ECE3F12A0E0:0x00421D20
+  features:
+    - and:
+      - or:
+        - bytes: 886A3F24D308A385 = Blowfish P-array P[0..1] (LE)
+        - bytes: 243F6A8885A308D3 = Blowfish P-array P[0..1] (BE)
+        - bytes: E62128457713D038CF6654BE6C0CE934 = Blowfish P-array P[8..11] (LE)
+        - bytes: 452821E638D01377BE5466CF34E90C6C = Blowfish P-array P[8..11] (BE)
+      - or:
+        - bytes: A60B31D1ACB5DF98DB72FD2FB7DF1AD0 = Blowfish S-box 0 (first 16 bytes, LE)
+        - bytes: D1310BA698DFB5AC2FFD72DBD01ADFB7 = Blowfish S-box 0 (first 16 bytes, BE)
+        - bytes: E9707A4B4429B3B52E0975DB232619C4 = Blowfish S-box 1 (first 16 bytes, LE)
+        - bytes: 4B7A70E9B5B32944DB75092EC4192623 = Blowfish S-box 1 (first 16 bytes, BE)
+        - bytes: 685A3DE9F74081941C264CF634296994 = Blowfish S-box 2 (first 16 bytes, LE)
+        - bytes: E93D5A68948140F7F64C261C94692934 = Blowfish S-box 2 (first 16 bytes, BE)
+        - bytes: 37CE393ACFF5FAD33777C2AB1B2DC55A = Blowfish S-box 3 (first 16 bytes, LE)
+        - bytes: 3A39CE37D3FAF5CFABC275375AC52D1B = Blowfish S-box 3 (first 16 bytes, BE)
+      - number: 0x10 = key length (16 bytes)

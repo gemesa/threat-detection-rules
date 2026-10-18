@@ -1,0 +1,27 @@
+rule:
+  meta:
+    name: hash data using custom MD5
+    namespace: data-manipulation/hashing/md5
+    authors:
+      - gemesa@protonmail.com
+    description: >-
+      Detects the custom MD5 initialization function (FUN_0044bc70) by the
+      four standard IV constants. Used to derive the XOR cipher key and
+      as the hash primitive inside the HMAC-MD5 implementation.
+    scopes:
+      static: function
+      dynamic: unsupported
+    mbc:
+      - Cryptography::Cryptographic Hash::MD5 [C0029.001]
+    references:
+      - https://www.virustotal.com/gui/file/36684cef31a4a43473d5b12d30aabf94f56e407b0eeec14b7c1cb87efa3159b6
+    examples:
+      - 88B43801B38ACEA324467ECE3F12A0E0:0x0044BC70
+  features:
+    - and:
+      - number: 0x67452301 = MD5 IV A
+      - number: 0xEFCDAB89 = MD5 IV B
+      - number: 0x98BADCFE = MD5 IV C
+      - number: 0x10325476 = MD5 IV D
+      - not:
+        - number: 0xC3D2E1F0 = SHA1 IV E (excludes SHA1)
